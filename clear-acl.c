@@ -1,7 +1,5 @@
 /*
-
 clear-acl.c: wipe ACLs from a symlink in Mac OS X
-
 */
 
 #include <stdio.h>
@@ -20,22 +18,16 @@ int main(int argc, char *argv[]) {
 	acl_t acl_for_symlink;
 
 	if ((acl_t)NULL == (acl_for_symlink = acl_get_link_np(argv[1], ACL_TYPE_EXTENDED))) {
-		int try_open_fd = open(argv[1], O_SYMLINK);
+		int try_open_fd;
 
-		if(-1 == try_open_fd)
+		if(
+			-1==(try_open_fd=open(argv[1], O_SYMLINK)) ||
+			-1==close(try_open_fd) ||
+			-1==readlink(argv[1],NULL,0)
+		)
 			perror(argv[0]);
-		else {
-
-			if(
-				-1==close(try_open_fd) ||
-				-1==readlink(argv[1],NULL,0)
-			) {
-				perror(argv[0]);
-				return 1;
-			}
-
+		else
 			fprintf(stderr,"%s has no ACLs\n",argv[1]);
-		}
 		
 		return 1;
 	}
